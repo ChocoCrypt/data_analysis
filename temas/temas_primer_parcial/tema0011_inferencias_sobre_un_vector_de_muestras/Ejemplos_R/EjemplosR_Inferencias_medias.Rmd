@@ -1,0 +1,63 @@
+---
+title: "Algunos Ejemplos de Inferencias sobre Medias"
+output: html_notebook
+---
+
+## Ejemplo 1
+
+```{r}
+rm(list=ls())
+
+X <- matrix(c(6,10,8,
+              9,6,3),byrow=FALSE,ncol=2)
+
+mu0 <- matrix(c(9,5),ncol=1)
+
+n <- nrow(X)
+p <- ncol(X)
+
+(X.mean <- t(matrix(1,ncol=n) %*% X)/n)
+
+(D <- X - matrix(1,nrow=n) %*% t(X.mean))
+
+(S <- (n-1)^(-1) * t(D)%*%D)
+
+Sinv <- solve(S)
+
+T2 <- n * t(X.mean-mu0) %*% Sinv %*% (X.mean-mu0)
+
+# T^2 esta distribuida como ((n-1)*p)/(n-p)*qf(1-alpha,p,n-p)
+
+(3-1)*2/(3-2)*qf(1-0.05,2,3-2)
+```
+
+
+
+## Ejemplo 3
+
+```{r}
+rm(list=ls())
+
+alpha <- 0.1
+
+dat <- read.table("sweat.DAT")
+
+X <- as.matrix(dat)
+n <- nrow(X)
+p <- ncol(X)
+X.mean <- t(matrix(1,ncol=n) %*% X)/n
+D <- X - matrix(1,nrow=n) %*% t(X.mean)
+S <- (n-1)^(-1) * t(D)%*%D
+Sinv <- solve(S)
+
+(critical.value <- (p*(n-1))/(n-p)*qf(1-alpha,p,n-p))
+
+mu = c(4,50,10)
+
+(T2 = n*t(X.mean-mu)%*%Sinv%*%(X.mean-mu))
+
+(T2 <= critical.value)
+
+```
+
+

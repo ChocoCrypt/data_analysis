@@ -1,0 +1,115 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Ejemplo sobre un dataset en una matriz
+#### Funciones para calcular
+
+(i) n, xbar
+(ii) S
+(iii) R
+(iv) n, xbar, S, and R
+
+
+Leer y extrar una muestra del dataset
+```{r}
+scores <- read.table('scores_data.txt', header=TRUE)
+attach(scores)
+names(scores)                           # look at the variable names
+head(scores)                            # see the first 6 lines of data
+tail(scores)                            # see the last 6 lines of data
+
+X <- as.matrix(scores[,2:5])            # put the variables for the test scores 
+                                        # into matrix X
+
+p <- ncol(X)                            # Check to make sure things worked OK
+p
+n <- nrow(X)
+head(X)
+tail(X)
+
+```
+
+Definir una función para calcular el vector de medias que imprime
+n = tamaño de la muestra
+xbar = vector de medias
+
+```{r}
+meanvector <- function(X){
+    n <- nrow(X)
+    one <- array(1, dim=c(n))
+    xbar <- t(X) %*% one/n
+    list(n=n, xbar=xbar)
+    }
+```
+### Ejemplos de la función
+
+(a) Calcular n y xbar
+```{r}
+meanvector(X)
+```
+(b)Calcular solo xbar
+```{r}
+meanvector(X)$xbar
+```
+
+(c) Muestra a n
+```{r}
+meanvector(X)$n
+```
+
+(d) Asigna el vector de mdias a una variable
+```{r}
+xbartest <-meanvector(X)$xbar
+```
+
+#### Función que calcula S = matriz de covarianzas muestral
+
+```{r}
+Smatrix  <- function(X) {
+    n <- nrow(X)
+    one <- array(1, dim=c(n))
+    xbar <- t(X) %*% one/n
+    W <- t(X - one %*% t(xbar)) %*% (X - one %*% t(xbar))
+    S <- W / (n-1) 
+    list(S=S)
+     }
+```
+#### Funcion que calcula
+####  n   = tamaño de la muestra
+####  xbar= vector columna de medias
+####  S   = matriz de covarianzas muestral
+####  R   = matriz de correlaciones muestral
+
+```{r}
+samplestats <- function(X) {
+    n <- nrow(X)
+    one <- array(1, dim=c(n))
+    xbar <- t(X) %*% one/n
+    W <- t(X - one %*% t(xbar)) %*% (X - one %*% t(xbar))
+    S <- W / (n-1) 
+    Dsqrt <- diag(diag(sqrt(S)) )
+    invD  <- solve(Dsqrt)
+    R <- invD %*% S %*% invD
+    list (n = n, xbar=xbar, S = S, R=R )
+    }
+```
+
+Leer los datos masculinos y femeninos y colocar en diferentes matrices. 
+Calcule los vectores media y la diferencia entre estos
+
+```{r}
+male   <- as.matrix(scores[1:32,2:5])
+female <- as.matrix(scores[33:64,2:5])
+
+maleall <- samplestats(male)
+mbar <- maleall$xbar
+
+
+(femaleall <- samplestats(female))
+fbar <- femaleall$xbar
+
+(difference <- mbar - fbar)
+```
+

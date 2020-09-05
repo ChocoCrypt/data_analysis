@@ -1,0 +1,106 @@
+% article example for classicthesis.sty
+\documentclass[10pt,a4paper]{article} % KOMA-Script article scrartcl
+\usepackage{import}
+\usepackage{xifthen}
+\usepackage{pdfpages}
+\usepackage{transparent}
+\newcommand{\incfig}[1]{%
+    \def\svgwidth{\columnwidth}
+    \import{./figures/}{#1.pdf_tex}
+}
+\usepackage{lipsum}     %lorem ipsum text
+\usepackage{titlesec}   %Section settings
+\usepackage{titling}    %Title settings
+\usepackage[margin=10em]{geometry}  %Adjusting margins
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{amsmath}    %Display equations options
+\usepackage{amssymb}    %More symbols
+\usepackage{xcolor}     %Color settings
+\usepackage{pagecolor}
+\usepackage{mdframed}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{graphicx}
+\graphicspath{ {./Images/} }
+\setlength{\columnsep}{1cm}
+
+% ====| color de la pagina y del fondo |==== %
+\pagecolor{black}
+\color{white}
+
+
+
+\begin{document}
+    %========================{TITLE}====================%
+    \title{{  Taller 2 Analisis de datos  }}
+    \author{{Rodrigo Castillo}}
+    \date{\today}
+
+    \maketitle
+
+
+    %=======================NOTES GOES HERE===================%
+    \section{Dada la matriz de datos ... }
+        \begin{equation}
+            X = \begin{pmatrix}
+               9 & 1
+               \\ 5 & 3
+               \\ 1 & 2
+            \end{pmatrix}
+        \end{equation}
+
+        \begin{enumerate}
+
+            \item {grafique un diagrama de dispersion en $ p = 2  $ dimensiones
+                . Localice la media de la muetra en su daigrama}
+
+            \item {Dibuje la representacion $ n = 3  $ dimensional de los datos
+                y trace los vectores de desviacion  $ y_1  \hat{x_1  }   $ y $ y_2 - \hat{x_2}   $ }
+
+            \item {Dibuje los vectores de desviación en (b) que emanan del origen. Calcula las
+            longitudes de estos vectores y el coseno del ángulo entre ellos. Relacione estas
+            cantidades con $ S_n , R  $ }
+            \item {\color{red} Calcular la varianza muestral generalizada $ \color{white}  S  $ }
+        \end{enumerate}
+
+        \section{demuestre que $ \color{blue} S \color{white}  = (s_{11} ,
+        s_{22} , s_{33} , ... , s_{pp})\color{blue} R \color{white}   $ }
+        \color{yellow} las cosas que están en \color{blue} azul \color{white} es porque tienen
+        el simbolo ese de cardinal que no sé como guardar :( .
+
+ \color{white}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    %=======================NOTES ENDS HERE===================%
+
+    % bib stuff
+    \nocite{*}
+    \addtocontents{toc}{{}}
+    \addcontentsline{toc}{section}{\refname}
+    \bibliographystyle{plain}
+    \bibliography{../Bibliography}
+\end{document}
