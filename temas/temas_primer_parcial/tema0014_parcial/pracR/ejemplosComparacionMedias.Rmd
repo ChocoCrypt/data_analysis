@@ -1,0 +1,164 @@
+---
+title: "Ejemplos comparación de medias"
+output: html_notebook
+---
+
+### Ejemplo 1
+
+Las plantas de tratamiento de aguas residuales municipales están obligadas por ley a monitorear sus descargas en ríos y arroyos de manera regular. La preocupación por la confiabilidad de los datos de uno de estos programas de monitoreo llevó a un estudio en el que se dividieron muestras de efluentes y se enviaron a dos laboratorios para su análisis. La mitad de cada muestra se envió al Laboratorio de Higiene del Estado de Wisconsin y la mitad se envió a un laboratorio comercial privado que se utiliza habitualmente en el programa de monitoreo. Se obtuvieron medidas de demanda bioquímica de oxígeno (DBO) y sólidos en suspensión (SS), para divisiones $n = 11$ de la muestra, de los dos laboratorios. 
+
+*¿Están de acuerdo los análisis químicos de los dos laboratorios? Si existen diferencias, ¿cuál es su naturaleza?*
+
+
+Leemos los datos
+```{r}
+dat <- read.table("aguas.dat")
+names(dat) <- c("BOD.com","SS.com","BOD.sta","SS.sta")
+head(dat)
+```
+
+Definimos algunos parámetros:
+```{r}
+alpha <- 0.05
+n <- nrow(dat)
+p <- 2
+mu0 <- matrix(c(0,0),ncol=1)
+```
+
+Calculamos las diferencias $d_{j 1}=x_{1 j 1}-x_{2 j 1}$ y $d_{j 2}=x_{1 j 2}-x_{2 j 2} $ y sus medias 
+
+```{r}
+dj1 <- dat$BOD.com - dat$BOD.sta
+dj2 <- dat$SS.com - dat$SS.sta
+d <- matrix(c(dj1,dj2),nrow=n)
+d.bar <- matrix(c(mean(dj1),mean(dj2)),ncol=1)
+d
+d.bar
+```
+La matriz de covarianzas es:
+```{r}
+(Sd <- var(d))
+```
+
+Luego calculamos el estadístico $T^2$ y el valor crítico:
+```{r}
+(T2 <- n*t(d.bar)%*%solve(Sd)%*%d.bar)
+
+(T2.crit <- p*(n-1)/(n-p)*qf(1-alpha,p,n-p))
+```
+
+y concluimos:
+```{r}
+ifelse(T2>T2.crit,"Se rechaza H0","No se puede rechazar a H0")
+```
+Y por último calculamos los intervalos $T^2$ de confianza para el 95%
+
+```{r}
+
+d1_u <- d.bar[1,1] - sqrt(p*(n-1)/(n-p)*qf(1-alpha,p,n-p))*sqrt(Sd[1,1]/n)
+d1_l <- d.bar[1,1] + sqrt(p*(n-1)/(n-p)*qf(1-alpha,p,n-p))*sqrt(Sd[1,1]/n)
+
+d2_u <- d.bar[2,1] - sqrt(p*(n-1)/(n-p)*qf(1-alpha,p,n-p))*sqrt(Sd[2,2]/n)
+d2_l <- d.bar[2,1] + sqrt(p*(n-1)/(n-p)*qf(1-alpha,p,n-p))*sqrt(Sd[2,2]/n)
+
+c(d1_u,d1_l)
+c(d2_u,d2_l)
+
+```
+
+## Ejemplo 2
+Los anestésicos mejorados a menudo se desarrollan al estudiar primero sus efectos en los animales. En un estudio, 19 perros recibieron inicialmente el fármaco pentobarbitol. Luego, a cada perro se le administró dióxido de carbono $\mathrm{CO}_{2}$ en cada uno de dos niveles de presión. A continuación, se añadió halotano (H) y se repitió la administración de $\mathrm{CO}_{2}$.
+
+The data set contains the four measurements for each of the 19 dogs, where
+
+Treatment $1=$ high $\mathrm{CO}_{2}$ pressure without $\mathrm{H}$
+
+Treatment $2=\operatorname{low} \mathrm{CO}_{2}$ pressure without $\mathrm{H}$
+
+Treatment $3=$ high $\mathrm{CO}_{2}$ pressure with $\mathrm{H}$ 
+
+Treatment $4=\operatorname{low} \mathrm{CO}_{2}$ pressure with $\mathrm{H}$
+
+We shall analyze the anesthetizing effects of $\mathrm{CO}_{2}$ pressure and halothane from this repeated-measures design.
+
+There are three treatment contrasts that might be of interest in the experiment. Let $\mu_{1}, \mu_{2}, \mu_{3},$ and $\mu_{4}$ correspond to the mean responses for treatments $1,2,3,$ and
+$4,$ respectively. Then
+$$\left(\mu_{3}+\mu_{4}\right)-\left(\mu_{1}+\mu_{2}\right)=\left(\begin{array}{c}\text { Halothane contrast representing the } \\ \text { difference between the presence and } \\ \text { absence of halothane }\end{array}\right)$$
+
+$$\left(\mu_{1}+\mu_{3}\right)-\left(\mu_{2}+\mu_{4}\right)=\left(\begin{array}{c}\mathrm{CO}_{2} \text { contrast representing the difference } \\ \text { between high and low } \mathrm{CO}_{2} \text { pressure }\end{array}\right)$$
+
+$$\left(\mu_{1}+\mu_{4}\right)-\left(\mu_{2}+\mu_{3}\right)=\left(\begin{array}{c}\text { Contrast representing the influence } \\ \text { of halothane on } \mathrm{CO}_{2} \text { pressure differences } \\ \left(\mathrm{H}-\mathrm{CO}_{2}\right. \text { pressure "interaction") }\end{array}\right)$$
+
+```{r}
+dat <- read.table("perros.dat")
+head(dat)
+```
+
+Definimos la matriz de contraste (y volvemos el dataframe una matriz):
+```{r}
+C <- matrix(c(-1,-1,1,1,
+              1,-1,1,-1,
+              1,-1,-1,1),byrow=TRUE,ncol=4)
+X <- as.matrix(dat)
+C
+```
+
+Definimos algunos parámetros
+```{r}
+n <- nrow(X) # Observaciones
+q <- ncol(X) # Tratamientos
+alpha <- 0.05
+```
+
+Entonces, calculamos las medias, desviaciones, matriz de covarianzas y su inversa
+```{r}
+X.mean <- t(matrix(1,ncol=n) %*% X)/n
+D <- X - matrix(1,nrow=n) %*% t(X.mean)
+S <- (n-1)^(-1) * t(D)%*%D
+Sinv <- solve(S)
+```
+La matriz de contraste por la media es
+```{r}
+C%*%X.mean
+```
+La matriz de covarianzas multiplicada cuadráticamente por la matriz de contraste es:
+```{r}
+C%*%S%*%t(C)
+```
+
+De esta forma podemos calcular el estadístico $T^2$:
+```{r}
+(T2 <- n*t(C%*%X.mean)%*%solve(C%*%S%*%t(C))%*%(C%*%X.mean))
+```
+
+Y el valor crítico:
+```{r}
+(Critical.T2 <- ((n-1)*(q-1)/(n-q+1))*qf(1-alpha,q-1,n-q+1))
+```
+
+y concluimos:
+```{r}
+ifelse(Critical.T2,"Se rechaza H0 y no hay efectos del tratamiento","No se puede rechazar a H0")
+```
+
+Luego podemos calcular los intervalos de confianza
+
+Para el efecto de Halothane:
+```{r}
+C[1,]%*%X.mean - sqrt(((n-1)*(q-1)/(n-q+1))*qf(1-alpha,q-1,n-q+1))*sqrt(t(C[1,])%*%S%*%C[1,]/n)
+C[1,]%*%X.mean + sqrt(((n-1)*(q-1)/(n-q+1))*qf(1-alpha,q-1,n-q+1))*sqrt(t(C[1,])%*%S%*%C[1,]/n)
+```
+
+Para la influencia del halothane sobre las diferencias de presión de $H-CO_2$ :
+```{r}
+C[3,]%*%X.mean - sqrt(((n-1)*(q-1)/(n-q+1))*qf(1-alpha,q-1,n-q+1))*sqrt(t(C[3,])%*%S%*%C[3,]/n)
+C[3,]%*%X.mean + sqrt(((n-1)*(q-1)/(n-q+1))*qf(1-alpha,q-1,n-q+1))*sqrt(t(C[3,])%*%S%*%C[3,]/n)
+```
+
+y para la influencia de la presión del $CO_2$:
+```{r}
+C[2,]%*%X.mean - sqrt(((n-1)*(q-1)/(n-q+1))*qf(1-alpha,q-1,n-q+1))*sqrt(t(C[2,])%*%S%*%C[2,]/n)
+C[2,]%*%X.mean + sqrt(((n-1)*(q-1)/(n-q+1))*qf(1-alpha,q-1,n-q+1))*sqrt(t(C[2,])%*%S%*%C[2,]/n)
+```
+
+
